@@ -1,0 +1,67 @@
+Project Information:
+	Title: Sobel Transform Benchmark for execution on Jetson TK1 Dev. Kit
+	
+	Authors: Ramnarayan Krishnamurthy, University of Colorado (Shreyas.Ramnarayan@gmail.com)
+	         Matthew Demi Vis, Embry-Riddle Aeronautical University (MatthewVis@gmail.com)
+			 
+	This code was used to obtain results documented in the SPIE Sensor and Technologies paper: 
+	S. Siewert, V. Angoth, R. Krishnamurthy, K. Mani, K. Mock, S. B. Singh, S. Srivistava, 
+	C. Wagner, R. Claus, M. Demi Vis, “Software Defined Multi-Spectral Imaging for Arctic 
+	Sensor Networks”, SPIE Algorithms and Technologies for Multipectral, Hyperspectral, and 
+	Ultraspectral Imagery XXII, Baltimore, Maryland, April 2016. 
+	
+	Please use at your own risk. We are sharing so that other researchers and developers can 
+	recreate our results and make suggestions to improve and extend the benchmarks over time.
+
+------------
+Instructions:
+	1) 	Ensure you're in the Sobel_Jetson directory
+	2) 	Make the project (type make on any Linux system)
+	3) 	Change to the Debug directory
+	4) 	Run the sobel_edge binary, specifying the command line arguments as described below in Usage Description
+	5) 	If run in a continuous transform mode, use your operating system's interrupt/kill command to exit the program
+		(Ctrl+C in Linux) otherwise it will run infinitely.
+   
+------------   
+Usage Description:
+		./sobel_edge [-continuous [-fps=FPS]] [-img=imageFilename] [-cuda] [-h | -help | -?]
+	"-img" - specific an input image other than the default 
+		imageFilename can be any image stored in the (.ppm) or (.pgm) file format
+	"-coninuous" - run continuous transform for power measurment, leave out if only want to run the transform once.
+	"-fps" - specific the frequency you'd like the transform to run at
+	"-cuda" - specify that you would like the transforms to be off-loaded onto the CUDA co-processor
+	"-h | -help | -?" - show the usage description and end
+	filename.bmp can be any image stored in the bitmap (.bmp) file format
+	freq can be:
+		- any positive integer number to be used to set the desired frequency of continuous transform
+		- zero ("0") in order to run continuous transform as fast as the hardware can and report the transform frequency
+		- "-1" in order to to run the transform only once and get an output image
+
+------------
+Notes:
+	- Execution detects the edges in the provided image using a Sobel filter.
+
+------------
+Trace: (example of continuous transform at 1Hz stopped after 4 seconds with Ctrl+c)
+
+	root@tegra-ubuntu:/home/ubuntu/Desktop/Sobel_Jetson# make
+	sudo g++ -c -lpthread options.cpp ppm.cpp -I./
+	nvcc -o sobel_edge options.o ppm.o Sobel_kernel.cu -O0 -I./ -I/home/ubuntu/NVIDIA_GPU_Computing_SDK//C/common/inc/ -L/usr/local/cuda/ -lcudart -L/home/ubuntu/NVIDIA_GPU_Computing_SDK//C/lib/
+	root@tegra-ubuntu:/home/ubuntu/Desktop/Sobel_Jetson# ./sobel_edge -cuda -continuous -fps=1 -img=beach_160x120.pgm 
+	Img set to beach_160x120.pgm
+	Continuous mode
+	FPS Limiter set at 1
+	Program will use CUDA for transform.
+	CUDA initialized.
+	Reading input image...
+	Width:160  Height:120
+	[done]
+	Program will enter an infinite loop, use Ctrl+C to exit program when done.
+	Press enter to proceed...
+		 Freq: 0.999454 Hz
+		 Freq: 0.999754 Hz
+		 Freq: 0.999760 Hz
+		 Freq: 0.999792 Hz
+	^C
+	root@tegra-ubuntu:/home/ubuntu/Desktop/Sobel_Jetson# 
+
